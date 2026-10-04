@@ -107,18 +107,45 @@
     }
 
     /* Tabla de productos - scroll horizontal */
-    .tabla-wrapper {
+        .tabla-wrapper {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       border: 1px solid var(--border);
       border-radius: 8px;
+      position: relative;
     }
+    /* Sombra que indica scroll horizontal */
+    .tabla-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.9));
+      pointer-events: none;
+      border-radius: 0 8px 8px 0;
+      z-index: 1;
+    }
+/*    .tabla-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }*/
     table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+      background: #fff;
+    }
+    
+/*    table {
       width: 100%;
       border-collapse: collapse;
       min-width: 750px;
       background: #fff;
-    }
+    }*/
     th, td {
       padding: 8px 6px;
       border-bottom: 1px solid var(--border);
