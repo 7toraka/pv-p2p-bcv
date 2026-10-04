@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calculadora de Precio de Venta – Venezuela (BCV / P2P)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --border: #e5e7eb;
+      --input-bg: #ffffff;
+      --input-border: #d1d5db;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      line-height: 1.4;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.35rem;
+      margin: 0 0 6px;
+      color: #111827;
+    }
+    p.subtitle {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .section-title {
+      font-size: 1rem;
+      margin: 0 0 10px;
+      color: #111827;
+    }
+
+    /* Tasas compactas - mobile first */
+    .tasas-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    @media (min-width: 600px) {
+      .tasas-row {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+    }
+    .field-small label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .field-small input[type="number"] {
+      width: 100%;
+      padding: 8px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      min-height: 40px;
+    }
+
+    /* Transporte global en productos */
+    .transporte-row {
+      margin-bottom: 12px;
+    }
+    .field-medium label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .field-medium input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      min-height: 40px;
+    }
+
+    /* Tabla de productos - scroll horizontal */
+    .tabla-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 750px;
+      background: #fff;
+    }
+    th, td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    th {
+      text-align: left;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+      background: #f9fafb;
+      position: sticky;
+      left: 0;
+    }
+    td input[type="number"],
+    td input[type="text"] {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.8rem;
+      min-height: 36px;
+    }
+    td input[type="number"]:focus,
+    td input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+    td input[readonly] {
+      background: #f9fafb;
+      color: #4b5563;
+    }
+
+    .btn-icon {
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 5px 8px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      min-height: 34px;
+      white-space: nowrap;
+    }
+    .btn-icon:hover {
+      background: #e5e7eb;
+    }
+    .btn-danger {
+      background: #fee2e2;
+      border-color: #fecaca;
+      color: var(--danger);
+    }
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    button.primary,
+    button.secondary {
+      min-height: 40px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      border: 1px solid transparent;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+    }
+    button.primary:hover {
+      background: #1d4ed8;
+    }
+    button.secondary {
+      background: #f3f4f6;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.secondary:hover {
+      background: #e5e7eb;
+    }
+
+    /* Resultados */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    @media (min-width: 500px) {
+      .results-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      }
+    }
+    .result-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .result-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .result-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    .result-value.big {
+      font-size: 1.15rem;
+      color: var(--accent);
+    }
+    .note {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.3;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .total-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .total-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .header-actions h2 {
+      font-size: 1rem;
+      margin: 0;
+    }
+    .header-actions .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora de Precio de Venta</h1>
+    <p class="subtitle">
+      Precio unitario en “dólares BCV” para lotes al mayor, con transporte global repartido por lote.
+    </p>
+
+    <!-- Tasas globales -->
+    <div class="card">
+      <h2 class="section-title">Tasas y margen</h2>
+      <div class="tasas-row">
+        <div class="field-small">
+          <label for="tasaP2P">Tasa P2P (Bs/USD)</label>
+          <input type="number" id="tasaP2P" step="0.01" value="965.15" />
+        </div>
+        <div class="field-small">
+          <label for="tasaBCV">Tasa BCV (Bs/USD)</label>
+          <input type="number" id="tasaBCV" step="0.01" value="871.37" />
+        </div>
+        <div class="field-small">
+          <label for="margen">Margen %</label>
+          <input type="number" id="margen" step="0.1" value="30" />
+        </div>
+        <div class="field-small">
+          <label for="tasaVenta">Tasa venta (Bs/USD)</label>
+          <input type="number" id="tasaVenta" step="0.01" value="871.37" />
+        </div>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="secondary" id="btnIgualarTasaVenta">Igualar a BCV</button>
+        <button type="button" class="secondary" id="btnResetTasas">Restablecer</button>
+      </div>
+    </div>
+
+    <!-- Productos -->
+    <div class="card">
+      <div class="header-actions">
+        <h2 class="section-title">Productos (lotes)</h2>
+        <div class="actions">
+          <button type="button" class="primary" id="btnAgregarProducto">+ Agregar</button>
+          <button type="button" class="secondary" id="btnDescargarCSV">Descargar CSV</button>
+        </div>
+      </div>
+
+      <!-- Transporte global en esta sección -->
+      <div class="transporte-row">
+        <div class="field-medium">
+          <label for="transporteGlobal">Transporte total $ (global, repartido entre lotes)</label>
+          <input type="number" id="transporteGlobal" step="0.01" value="60" />
+        </div>
+      </div>
+
+      <div class="tabla-wrapper">
+        <table id="tablaProductos">
+          <thead>
+            <tr>
+              <th style="width: 55px;">Ítem</th>
+              <th style="width: 130px;">Producto</th>
+              <th style="width: 80px;">Costo $</th>
+              <th style="width: 80px;">Cantidad</th>
+              <th style="width: 80px;">Transp. $</th>
+              <th style="width: 80px;">Otros $</th>
+              <th style="width: 100px;">P. Unit. $</th>
+              <th style="width: 60px;"></th>
+            </tr>
+          </thead>
+          <tbody id="cuerpoTabla">
+            <!-- Las filas se generan con JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="total-row">
+        <div class="total-label">Total de lotes:</div>
+        <div class="total-value" id="totalLotes">0</div>
+      </div>
+
+      <div class="note">
+        Transporte por lote = Transporte total $ / N° de lotes<br />
+        Costo unitario = (Costo + Transp. + Otros) / Cantidad<br />
+        P. unitario = (Costo unitario × Tasa P2P × (1 + margen%)) / Tasa de venta
+      </div>
+    </div>
+
+    <!-- Resultados globales -->
+    <div class="card">
+      <h2 class="section-title">Resumen global</h2>
+      <div class="results-grid">
+        <div class="result-box">
+          <div class="result-label">Costo total en $</div>
+          <div class="result-value" id="resCostoTotalUSD">0.00 $</div>
+        </div>
+        <div class="result-box">
+          <div class="result-label">Costo total en Bs</div>
+          <div class="result-value" id="resCostoTotalBS">0.00 Bs</div>
+        </div>
+        <div class="result-box">
+          <div class="result-label">Precio venta en Bs</div>
+          <div class="result-value" id="resPrecioVentaBS">0.00 Bs</div>
+        </div>
+        <div class="result-box">
+          <div class="result-label">Precio venta en $</div>
+          <div class="result-value big" id="resPrecioVentaUSD">0.00 $</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tasaP2PEl = document.getElementById('tasaP2P');
+    const tasaBCVEl = document.getElementById('tasaBCV');
+    const margenEl = document.getElementById('margen');
+    const tasaVentaEl = document.getElementById('tasaVenta');
+    const transporteGlobalEl = document.getElementById('transporteGlobal');
+
+    const btnIgualarTasaVenta = document.getElementById('btnIgualarTasaVenta');
+    const btnResetTasas = document.getElementById('btnResetTasas');
+    const btnAgregarProducto = document.getElementById('btnAgregarProducto');
+    const btnDescargarCSV = document.getElementById('btnDescargarCSV');
+
+    const cuerpoTabla = document.getElementById('cuerpoTabla');
+
+    const resCostoTotalUSD = document.getElementById('resCostoTotalUSD');
+    const resCostoTotalBS = document.getElementById('resCostoTotalBS');
+    const resPrecioVentaBS = document.getElementById('resPrecioVentaBS');
+    const resPrecioVentaUSD = document.getElementById('resPrecioVentaUSD');
+    const totalLotesEl = document.getElementById('totalLotes');
+
+    let contadorProductos = 0;
+
+    function parseNum(el) {
+      const v = parseFloat(el.value);
+      return isNaN(v) ? 0 : v;
+    }
+
+    function formatNum(num, decimals = 2) {
+      return num.toLocaleString('es-VE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    }
+
+    function actualizarNumeracionItems() {
+      cuerpoTabla.querySelectorAll('tr').forEach((tr, index) => {
+        const celdaItem = tr.querySelector('.inp-item');
+        celdaItem.value = index + 1;
+      });
+      totalLotesEl.textContent = cuerpoTabla.querySelectorAll('tr').length;
+    }
+
+    function crearFilaProducto(valores = {}) {
+      contadorProductos++;
+      const tr = document.createElement('tr');
+      tr.dataset.id = contadorProductos;
+
+      const costo = valores.costo ?? 10;
+      const otros = valores.otros ?? 0;
+      const cantidad = valores.cantidad ?? 1;
+      const nombre = valores.nombre ?? `Producto ${contadorProductos}`;
+      const transporteLote = valores.transporteLote ?? 0;
+
+      tr.innerHTML = `
+        <td>
+          <input type="number" class="inp-item" step="1" value="0" readonly style="text-align:center;" />
+        </td>
+        <td>
+          <input type="text" class="inp-nombre" value="${nombre}" />
+        </td>
+        <td>
+          <input type="number" class="inp-costo" step="0.01" value="${costo}" />
+        </td>
+        <td>
+          <input type="number" class="inp-cantidad" step="1" value="${cantidad}" />
+        </td>
+        <td>
+          <input type="number" class="inp-transporte" step="0.01" value="${transporteLote}" readonly />
+        </td>
+        <td>
+          <input type="number" class="inp-otros" step="0.01" value="${otros}" />
+        </td>
+        <td>
+          <input type="number" class="inp-precio-unitario" step="0.01" value="0" readonly />
+        </td>
+        <td>
+          <button type="button" class="btn-icon btn-danger btn-eliminar">Eliminar</button>
+        </td>
+      `;
+
+      cuerpoTabla.appendChild(tr);
+
+      // Eventos en los inputs de esta fila
+      tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          calcularTodo();
+          actualizarNumeracionItems();
+        });
+      });
+      tr.querySelector('.btn-eliminar').addEventListener('click', () => {
+        tr.remove();
+        calcularTodo();
+        actualizarNumeracionItems();
+      });
+
+      actualizarNumeracionItems();
+    }
+
+    function calcularTodo() {
+      const tasaP2P = parseNum(tasaP2PEl);
+      const tasaBCV = parseNum(tasaBCVEl);
+      const margenPorc = parseNum(margenEl);
+      const tasaVentaVal = parseNum(tasaVentaEl);
+      const tasaVenta = tasaVentaVal > 0 ? tasaVentaVal : tasaBCV;
+
+      const margen = margenPorc / 100;
+      const transporteGlobal = parseNum(transporteGlobalEl);
+
+      const numLotes = cuerpoTabla.querySelectorAll('tr').length;
+      const transportePorLote = numLotes > 0 ? transporteGlobal / numLotes : 0;
+
+      // Actualizar campo de transporte por lote en cada fila
+      cuerpoTabla.querySelectorAll('tr').forEach(tr => {
+        const inpTransporte = tr.querySelector('.inp-transporte');
+        inpTransporte.value = transportePorLote.toFixed(2);
+      });
+
+      let costoTotalUSDGlobal = 0;
+      let precioVentaUSDGlobal = 0;
+
+      // Recorrer filas
+      cuerpoTabla.querySelectorAll('tr').forEach(tr => {
+        const costoLote = parseNum(tr.querySelector('.inp-costo'));
+        const transporteLote = parseNum(tr.querySelector('.inp-transporte'));
+        const otrosCostos = parseNum(tr.querySelector('.inp-otros'));
+        const cantidad = parseNum(tr.querySelector('.inp-cantidad'));
+
+        const inpPrecioUnitario = tr.querySelector('.inp-precio-unitario');
+
+        // Costo total del lote en $
+        const costoTotalLoteUSD = costoLote + transporteLote + otrosCostos;
+
+        // Costo unitario en $
+        const cantidadValida = cantidad > 0 ? cantidad : 1;
+        const costoUnitarioUSD = costoTotalLoteUSD / cantidadValida;
+
+        // Precio unitario de venta en $
+        const costoUnitarioBS = costoUnitarioUSD * tasaP2P;
+        const precioUnitarioBS = costoUnitarioBS * (1 + margen);
+        const precioUnitarioUSD = tasaVenta > 0 ? precioUnitarioBS / tasaVenta : 0;
+
+        inpPrecioUnitario.value = precioUnitarioUSD.toFixed(2);
+
+        // Acumular globales: costo total en $ del lote (sin dividir por cantidad)
+        costoTotalUSDGlobal += costoTotalLoteUSD;
+
+        // Para el precio de venta global, asumimos que se vende toda la cantidad al precio unitario calculado
+        const precioVentaTotalLoteUSD = precioUnitarioUSD * cantidadValida;
+        precioVentaUSDGlobal += precioVentaTotalLoteUSD;
+      });
+
+      const costoTotalBSGlobal = costoTotalUSDGlobal * tasaP2P;
+      const precioVentaBSGlobal = costoTotalBSGlobal * (1 + margen);
+
+      resCostoTotalUSD.textContent = formatNum(costoTotalUSDGlobal) + ' $';
+      resCostoTotalBS.textContent = formatNum(costoTotalBSGlobal) + ' Bs';
+      resPrecioVentaBS.textContent = formatNum(precioVentaBSGlobal) + ' Bs';
+      resPrecioVentaUSD.textContent = formatNum(precioVentaUSDGlobal) + ' $';
+    }
+
+    btnIgualarTasaVenta.addEventListener('click', () => {
+      const tasaBCV = parseNum(tasaBCVEl);
+      tasaVentaEl.value = tasaBCV > 0 ? tasaBCV : '';
+      calcularTodo();
+    });
+
+    btnResetTasas.addEventListener('click', () => {
+      tasaP2PEl.value = 965.15;
+      tasaBCVEl.value = 871.37;
+      margenEl.value = 30;
+      tasaVentaEl.value = 871.37;
+      calcularTodo();
+    });
+
+    btnAgregarProducto.addEventListener('click', () => {
+      crearFilaProducto({ nombre: `Producto ${contadorProductos + 1}`, costo: 10, otros: 0, cantidad: 1 });
+      calcularTodo();
+    });
+
+    // Descargar CSV
+    btnDescargarCSV.addEventListener('click', () => {
+      const tasaP2P = parseNum(tasaP2PEl);
+      const tasaBCV = parseNum(tasaBCVEl);
+      const margenPorc = parseNum(margenEl);
+      const tasaVentaVal = parseNum(tasaVentaEl);
+      const tasaVenta = tasaVentaVal > 0 ? tasaVentaVal : tasaBCV;
+      const transporteGlobal = parseNum(transporteGlobalEl);
+
+      const numLotes = cuerpoTabla.querySelectorAll('tr').length;
+      const transportePorLote = numLotes > 0 ? transporteGlobal / numLotes : 0;
+
+      const lineas = [];
+
+      // Encabezado de tasas
+      lineas.push(['Concepto', 'Valor']);
+      lineas.push(['Tasa P2P (Bs/USD)', tasaP2P]);
+      lineas.push(['Tasa BCV (Bs/USD)', tasaBCV]);
+      lineas.push(['Tasa de venta (Bs/USD)', tasaVenta]);
+      lineas.push(['Margen de utilidad (%)', margenPorc]);
+      lineas.push([]); // línea en blanco
+
+      // Transporte global en sección de productos
+      lineas.push(['Transporte total $ (global)', transporteGlobal]);
+      lineas.push(['Transporte por lote $', transportePorLote]);
+      lineas.push([]);
+
+      // Encabezado de productos
+      lineas.push([
+        'Ítem',
+        'Producto',
+        'Costo $',
+        'Cantidad',
+        'Transporte $ (por lote)',
+        'Otros $',
+        'Precio unitario $'
+      ]);
+
+      // Filas de productos
+      cuerpoTabla.querySelectorAll('tr').forEach(tr => {
+        const item = parseNum(tr.querySelector('.inp-item'));
+        const nombre = tr.querySelector('.inp-nombre').value.trim() || '';
+        const costo = parseNum(tr.querySelector('.inp-costo'));
+        const cantidad = parseNum(tr.querySelector('.inp-cantidad'));
+        const transporte = parseNum(tr.querySelector('.inp-transporte'));
+        const otros = parseNum(tr.querySelector('.inp-otros'));
+        const pUnitario = parseNum(tr.querySelector('.inp-precio-unitario'));
+
+        lineas.push([
+          item,
+          nombre,
+          costo,
+          cantidad,
+          transporte,
+          otros,
+          pUnitario
+        ]);
+      });
+
+      // Línea en blanco y totales
+      lineas.push([]);
+      lineas.push(['Resumen global', '']);
+      lineas.push(['Total de lotes', numLotes]);
+      lineas.push(['Costo total en $', parseNum(resCostoTotalUSD)]);
+      lineas.push(['Costo total en Bs', parseNum(resCostoTotalBS)]);
+      lineas.push(['Precio de venta en Bs', parseNum(resPrecioVentaBS)]);
+      lineas.push(['Precio final de venta en $', parseNum(resPrecioVentaUSD)]);
+
+      // Construir CSV (separador coma, comillas en textos)
+      const csv = lineas.map(fila => {
+        return fila.map(celda => {
+          const texto = String(celda);
+          if (/[",;\n]/.test(texto)) {
+            return '"' + texto.replace(/"/g, '""') + '"';
+          }
+          return texto;
+        }).join(',');
+      }).join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const fecha = new Date();
+      const stamp = fecha.toISOString().slice(0,19).replace(/[:T]/g,'-');
+      a.download = `precios_venta_venezuela_${stamp}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // Inicializar con un producto
+    crearFilaProducto({ nombre: 'Producto 1', costo: 10, otros: 0, cantidad: 1 });
+    calcularTodo();
+
+    // Recalcular al cambiar tasas, margen o transporte global
+    [tasaP2PEl, tasaBCVEl, margenEl, tasaVentaEl, transporteGlobalEl].forEach(el => {
+      el.addEventListener('input', calcularTodo);
+    });
+  </script>
+</body>
+</html>
